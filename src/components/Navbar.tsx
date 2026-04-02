@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
-import tamtamAvatar from "@/assets/tamtam-avatar.png";
+import tamtamLogo from "@/assets/tamtam-logo.jpeg";
 
 const navLinks = [
   { label: "Features", href: "#features" },
@@ -42,8 +42,8 @@ const Navbar = () => {
     >
       <div className="container mx-auto flex items-center justify-between py-3 px-5">
         <button onClick={() => handleClick("#hero")} className="flex items-center gap-2 min-h-[48px]">
-          <img src={tamtamAvatar} alt="TamTam" width={40} height={40} />
-          <span className="font-heading font-extrabold text-xl text-primary">TamTam</span>
+          <img src={tamtamLogo} alt="TamTam" width={44} height={44} className="rounded-xl" />
+          <span className="font-heading font-extrabold text-2xl md:text-3xl text-primary">TamTam</span>
         </button>
 
         {/* Desktop */}
