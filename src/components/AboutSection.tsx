@@ -1,4 +1,4 @@
-import aboutIllustration from "@/assets/about-illustration.png";
+import tamtamPeeking from "@/assets/tamtam-peeking.png";
 
 const AboutSection = () => {
   return (
@@ -7,7 +7,7 @@ const AboutSection = () => {
         <div className="flex flex-col lg:flex-row items-center gap-8 md:gap-12 max-w-5xl mx-auto">
           <div className="w-full lg:flex-1 scroll-animate">
             <img
-              src={aboutIllustration}
+              src={tamtamPeeking}
               alt="Child reading with TamTam companion"
               loading="lazy"
               width={500}

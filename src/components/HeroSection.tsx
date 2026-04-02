@@ -1,4 +1,4 @@
-import heroIllustration from "@/assets/hero-illustration.png";
+import tamtamFriends from "@/assets/tamtam-friends.png";
 
 const FloatingShape = ({ className }: { className: string }) => (
   <div className={`absolute rounded-full opacity-20 ${className}`} />
@@ -30,7 +30,7 @@ const HeroSection = () => {
         {/* Illustration first on mobile */}
         <div className="flex-1 flex justify-center order-first lg:order-last w-full">
           <img
-            src={heroIllustration}
+            src={tamtamFriends}
             alt="Child with TamTam companion under starry sky"
             width={500}
             height={500}
