@@ -41,7 +41,7 @@ const HeroSection = () => {
         </div>
 
         <div className="flex-1 text-center lg:text-left space-y-5 md:space-y-6">
-          <h1 className="text-[28px] md:text-5xl lg:text-6xl font-extrabold leading-tight text-foreground">
+          <h1 className="text-[40px] md:text-6xl lg:text-7xl font-extrabold leading-tight text-foreground">
             A safe space where{" "}
             <span className="text-primary">little fighters</span> feel heard,
             supported, and{" "}
