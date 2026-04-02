@@ -34,14 +34,14 @@ const HeroSection = () => {
             alt="Child with TamTam companion under starry sky"
             width={500}
             height={500}
-            className="w-full max-w-[280px] md:max-w-md lg:max-w-lg drop-shadow-2xl animate-bob"
-            style={{ maxHeight: "40vh" }}
+            className="w-full max-w-[500px] md:max-w-2xl lg:max-w-3xl drop-shadow-2xl animate-bob"
+            style={{ maxHeight: "60vh" }}
             loading="eager"
           />
         </div>
 
         <div className="flex-1 text-center lg:text-left space-y-5 md:space-y-6">
-          <h1 className="text-[28px] md:text-5xl lg:text-6xl font-extrabold leading-tight text-foreground">
+          <h1 className="text-[40px] md:text-6xl lg:text-7xl font-extrabold leading-tight text-foreground">
             A safe space where{" "}
             <span className="text-primary">little fighters</span> feel heard,
             supported, and{" "}

@@ -41,9 +41,9 @@ const Navbar = () => {
       }`}
     >
       <div className="container mx-auto flex items-center justify-between py-3 px-5">
-        <button onClick={() => handleClick("#hero")} className="flex items-center gap-2 min-h-[48px]">
-          <img src={tamtamLogo} alt="TamTam" width={44} height={44} className="rounded-xl" />
-          <span className="font-heading font-extrabold text-2xl md:text-3xl text-primary">TamTam</span>
+        <button onClick={() => handleClick("#hero")} className="flex items-center gap-3 min-h-[48px]">
+          <img src={tamtamLogo} alt="TamTam" width={88} height={88} className="rounded-xl" />
+          <span className="font-heading font-extrabold text-4xl md:text-5xl text-primary">TamTam</span>
         </button>
 
         {/* Desktop */}
