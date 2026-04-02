@@ -34,8 +34,8 @@ const HeroSection = () => {
             alt="Child with TamTam companion under starry sky"
             width={500}
             height={500}
-            className="w-full max-w-[280px] md:max-w-md lg:max-w-lg drop-shadow-2xl animate-bob"
-            style={{ maxHeight: "40vh" }}
+            className="w-full max-w-[500px] md:max-w-2xl lg:max-w-3xl drop-shadow-2xl animate-bob"
+            style={{ maxHeight: "60vh" }}
             loading="eager"
           />
         </div>
