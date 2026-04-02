@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
-import tamtamAvatar from "@/assets/tamtam-avatar.png";
+import tamtamLogo from "@/assets/tamtam-logo.jpeg";
 
 const navLinks = [
   { label: "Features", href: "#features" },
