@@ -1,4 +1,4 @@
-import heroIllustration from "@/assets/hero-illustration.png";
+import tamtamFriends from "@/assets/tamtam-friends.png";
 
 const FloatingShape = ({ className }: { className: string }) => (
   <div className={`absolute rounded-full opacity-20 ${className}`} />
