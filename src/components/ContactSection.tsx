@@ -14,15 +14,18 @@ const ContactSection = () => {
     }, 3000);
   };
 
+  const inputClass =
+    "w-full px-4 py-3.5 rounded-xl border border-border bg-muted/30 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 text-base min-h-[52px]";
+
   return (
-    <section id="contact" className="py-20 lg:py-28 bg-soft-green-light/20">
-      <div className="container mx-auto px-4">
+    <section id="contact" className="py-16 md:py-20 lg:py-28 bg-soft-green-light/20">
+      <div className="container mx-auto px-5">
         <div className="max-w-xl mx-auto">
-          <div className="text-center mb-10 scroll-animate">
-            <h2 className="text-3xl md:text-4xl font-extrabold text-foreground mb-4">
+          <div className="text-center mb-8 md:mb-10 scroll-animate">
+            <h2 className="text-[28px] md:text-4xl font-extrabold text-foreground mb-3 md:mb-4">
               Partner With Us
             </h2>
-            <p className="text-muted-foreground text-lg">
+            <p className="text-muted-foreground text-base md:text-lg">
               Whether you're an NGO, hospital, or someone who wants to help — we'd love to hear from you.
             </p>
           </div>
@@ -31,16 +34,16 @@ const ContactSection = () => {
             <div className="scroll-animate text-center py-12 bg-card rounded-2xl shadow-sm border border-border/50 space-y-4">
               <div className="text-5xl">💛</div>
               <h3 className="text-xl font-bold text-foreground">Message Sent!</h3>
-              <p className="text-muted-foreground">We'll get back to you as soon as possible.</p>
+              <p className="text-muted-foreground text-base">We'll get back to you as soon as possible.</p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="scroll-animate bg-card rounded-2xl p-6 md:p-8 shadow-sm border border-border/50 space-y-4">
+            <form onSubmit={handleSubmit} className="scroll-animate bg-card rounded-2xl p-5 md:p-8 shadow-sm border border-border/50 space-y-4">
               <input
                 required
                 placeholder="Your Name"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-border bg-muted/30 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
+                className={inputClass}
               />
               <input
                 required
@@ -48,13 +51,13 @@ const ContactSection = () => {
                 placeholder="Email Address"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-border bg-muted/30 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
+                className={inputClass}
               />
               <input
                 placeholder="Organization (optional)"
                 value={form.organization}
                 onChange={(e) => setForm({ ...form, organization: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-border bg-muted/30 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
+                className={inputClass}
               />
               <textarea
                 required
@@ -62,11 +65,11 @@ const ContactSection = () => {
                 value={form.message}
                 onChange={(e) => setForm({ ...form, message: e.target.value })}
                 rows={4}
-                className="w-full px-4 py-3 rounded-xl border border-border bg-muted/30 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm resize-none"
+                className={`${inputClass} resize-none min-h-[120px]`}
               />
               <button
                 type="submit"
-                className="w-full bg-primary text-primary-foreground py-3 rounded-full font-bold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                className="w-full bg-primary text-primary-foreground py-4 rounded-full font-bold text-base active:opacity-80 transition-opacity flex items-center justify-center gap-2 min-h-[52px]"
               >
                 <Send size={18} /> Get in Touch
               </button>

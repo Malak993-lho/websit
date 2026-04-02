@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import {
   Bot, Users, Star, CalendarDays, Gamepad2, Lock, BookOpen, Wind,
 } from "lucide-react";
@@ -54,19 +55,48 @@ const features = [
 ];
 
 const FeaturesSection = () => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
   return (
-    <section id="features" className="py-20 lg:py-28">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-14 scroll-animate">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-foreground mb-4">
+    <section id="features" className="py-16 md:py-20 lg:py-28">
+      <div className="container mx-auto px-5">
+        <div className="text-center mb-10 md:mb-14 scroll-animate">
+          <h2 className="text-[28px] md:text-4xl font-extrabold text-foreground mb-3 md:mb-4">
             Everything a Child Needs 💛
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+          <p className="text-muted-foreground max-w-2xl mx-auto text-base md:text-lg">
             TamTam brings together companionship, play, and professional support in one safe, magical place.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Mobile: horizontal swipeable carousel */}
+        <div
+          ref={scrollRef}
+          className="md:hidden flex gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar pb-4 -mx-5 px-5"
+        >
+          {features.map((f) => (
+            <div
+              key={f.title}
+              className="snap-center shrink-0 w-[80vw] max-w-[320px] bg-card rounded-2xl p-6 shadow-sm border border-border/50 flex flex-col items-center text-center"
+            >
+              <div className={`w-14 h-14 rounded-xl ${f.color} flex items-center justify-center mb-4`}>
+                <f.icon size={28} />
+              </div>
+              <h3 className="font-bold text-lg text-foreground mb-2">{f.title}</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">{f.description}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Scroll hint dots (mobile) */}
+        <div className="md:hidden flex justify-center gap-1.5 mt-3">
+          {features.map((f, i) => (
+            <div key={i} className="w-1.5 h-1.5 rounded-full bg-border" />
+          ))}
+        </div>
+
+        {/* Desktop: grid */}
+        <div className="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-6">
           {features.map((f, i) => (
             <div
               key={f.title}

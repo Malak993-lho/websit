@@ -7,7 +7,11 @@ export default {
   theme: {
     container: {
       center: true,
-      padding: "2rem",
+      padding: {
+        DEFAULT: "1.25rem",
+        sm: "1.5rem",
+        md: "2rem",
+      },
       screens: {
         "2xl": "1400px",
       },
@@ -65,6 +69,7 @@ export default {
           purple: "hsl(var(--soft-purple))",
           "purple-light": "hsl(var(--soft-purple-light))",
         },
+        whatsapp: "hsl(var(--whatsapp))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
