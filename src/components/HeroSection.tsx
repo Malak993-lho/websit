@@ -51,8 +51,11 @@ const HeroSection = () => {
             TamTam is the emotional support companion designed for children facing health challenges — powered by empathy, built with love.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
-            <button className="w-full sm:w-auto bg-primary text-primary-foreground px-8 py-4 rounded-full font-bold text-lg active:scale-95 hover:opacity-90 transition-all shadow-lg min-h-[52px]">
-              Download the App
+            <button
+              onClick={() => document.querySelector("#contact")?.scrollIntoView({ behavior: "smooth" })}
+              className="w-full sm:w-auto bg-primary text-primary-foreground px-8 py-4 rounded-full font-bold text-lg active:scale-95 hover:opacity-90 transition-all shadow-lg min-h-[52px]"
+            >
+              Request Access
             </button>
             <button
               onClick={() => document.querySelector("#features")?.scrollIntoView({ behavior: "smooth" })}
