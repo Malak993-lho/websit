@@ -7,13 +7,11 @@ const FloatingShape = ({ className }: { className: string }) => (
 const HeroSection = () => {
   return (
     <section id="hero" className="relative min-h-screen flex items-center overflow-hidden pt-16">
-      {/* Floating background shapes - smaller on mobile */}
       <FloatingShape className="w-16 md:w-32 h-16 md:h-32 bg-warm-yellow top-20 left-4 md:left-10 animate-float" />
       <FloatingShape className="w-12 md:w-24 h-12 md:h-24 bg-soft-blue top-40 right-8 md:right-20 animate-float-slow" />
       <FloatingShape className="w-10 md:w-16 h-10 md:h-16 bg-soft-green bottom-32 left-1/4 animate-float" />
       <FloatingShape className="w-12 md:w-20 h-12 md:h-20 bg-soft-pink top-1/3 right-1/3 animate-float-slow" />
 
-      {/* Stars - fewer on mobile */}
       {[...Array(5)].map((_, i) => (
         <div
           key={i}
@@ -27,21 +25,22 @@ const HeroSection = () => {
       ))}
 
       <div className="container mx-auto px-5 flex flex-col lg:flex-row items-center gap-6 lg:gap-12">
-        {/* Illustration first on mobile */}
+        {/* Illustration — slightly smaller */}
         <div className="flex-1 flex justify-center order-first lg:order-last w-full">
           <img
             src={tamtamFriends}
             alt="Child with TamTam companion under starry sky"
             width={640}
             height={640}
-            className="w-[420px] max-w-none md:w-[680px] lg:w-[900px] drop-shadow-2xl animate-bob"
-            style={{ maxHeight: "74vh" }}
+            className="w-[320px] max-w-none md:w-[480px] lg:w-[640px] drop-shadow-2xl animate-bob"
+            style={{ maxHeight: "60vh" }}
             loading="eager"
           />
         </div>
 
         <div className="flex-1 text-center lg:text-left space-y-5 md:space-y-6">
-          <h1 className="text-[52px] md:text-7xl lg:text-[5.5rem] font-extrabold leading-[0.9] text-foreground">
+          {/* Smaller heading */}
+          <h1 className="text-[36px] md:text-5xl lg:text-6xl font-extrabold leading-[0.95] text-foreground">
             A safe space where{" "}
             <span className="text-primary">little fighters</span> feel heard,
             supported, and{" "}
@@ -58,10 +57,10 @@ const HeroSection = () => {
               Request Access
             </a>
             <button
-              onClick={() => document.querySelector("#features")?.scrollIntoView({ behavior: "smooth" })}
+              onClick={() => document.querySelector("#wishes")?.scrollIntoView({ behavior: "smooth" })}
               className="w-full sm:w-auto border-2 border-primary text-primary px-8 py-4 rounded-full font-bold text-lg active:bg-primary active:text-primary-foreground hover:bg-primary hover:text-primary-foreground transition-all min-h-[52px]"
             >
-              Learn More
+              Make a Wish Come True
             </button>
           </div>
         </div>

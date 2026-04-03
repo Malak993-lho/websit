@@ -45,7 +45,6 @@ const ChatButton = () => {
     setInput("");
     setIsTyping(true);
 
-    // Placeholder AI response — replace with real API call later
     setTimeout(() => {
       setMessages((prev) => [
         ...prev,
@@ -68,18 +67,17 @@ const ChatButton = () => {
 
   return (
     <div
-      className="fixed z-40"
+      className="fixed z-40 bottom-4 right-4"
       style={{
-        bottom: "calc(1.5rem + env(safe-area-inset-bottom, 0px))",
-        right: "1.25rem",
+        paddingBottom: "env(safe-area-inset-bottom, 0px)",
       }}
     >
       {/* Chat Window */}
       {view === "chat" && (
         <div
-          className="absolute bottom-[calc(100%+12px)] right-0 w-[340px] max-w-[calc(100vw-2.5rem)] rounded-2xl shadow-2xl overflow-hidden animate-fade-in flex flex-col"
+          className="absolute bottom-[calc(100%+8px)] right-0 w-[320px] max-w-[calc(100vw-2rem)] rounded-2xl shadow-2xl overflow-hidden animate-fade-in flex flex-col"
           style={{
-            height: "min(480px, calc(100vh - 140px))",
+            height: "min(440px, calc(100vh - 120px))",
             background: "linear-gradient(180deg, #f3e8ff 0%, #ffffff 30%)",
           }}
         >
@@ -95,7 +93,7 @@ const ChatButton = () => {
             >
               <ArrowLeft size={18} />
             </button>
-            <Bot size={22} />
+            <Bot size={20} />
             <div className="flex-1">
               <p className="font-bold text-sm leading-tight">TamTam Assistant</p>
               <p className="text-[11px] opacity-80">Typically replies instantly</p>
@@ -148,16 +146,16 @@ const ChatButton = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Type a message..."
-                className="flex-1 px-3.5 py-2.5 rounded-full bg-muted text-sm text-foreground placeholder:text-muted-foreground outline-none min-h-[44px]"
+                className="flex-1 px-3.5 py-2.5 rounded-full bg-muted text-sm text-foreground placeholder:text-muted-foreground outline-none min-h-[40px]"
               />
               <button
                 type="submit"
                 disabled={!input.trim()}
-                className="w-10 h-10 rounded-full flex items-center justify-center text-white disabled:opacity-40 transition-all active:scale-90 shrink-0"
+                className="w-9 h-9 rounded-full flex items-center justify-center text-white disabled:opacity-40 transition-all active:scale-90 shrink-0"
                 style={{ background: "linear-gradient(135deg, #9b59b6, #8e44ad)" }}
                 aria-label="Send message"
               >
-                <Send size={16} />
+                <Send size={14} />
               </button>
             </form>
           </div>
@@ -166,43 +164,38 @@ const ChatButton = () => {
 
       {/* Menu Options */}
       {view === "menu" && (
-        <div className="absolute bottom-[calc(100%+12px)] right-0 flex flex-col gap-2 animate-fade-in">
+        <div className="absolute bottom-[calc(100%+8px)] right-0 flex flex-col gap-2 animate-fade-in">
           <a
             href="https://wa.me/1234567890"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-3 px-5 py-3 rounded-full bg-[#25D366] text-white font-semibold text-sm shadow-lg hover:scale-105 active:scale-95 transition-transform whitespace-nowrap min-h-[48px]"
+            className="flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-[#25D366] text-white font-semibold text-sm shadow-lg hover:scale-105 active:scale-95 transition-transform whitespace-nowrap min-h-[44px]"
           >
-            <MessageCircle size={20} fill="currentColor" />
+            <MessageCircle size={18} fill="currentColor" />
             WhatsApp
           </a>
           <button
             onClick={() => setView("chat")}
-            className="flex items-center gap-3 px-5 py-3 rounded-full text-white font-semibold text-sm shadow-lg hover:scale-105 active:scale-95 transition-transform whitespace-nowrap min-h-[48px]"
+            className="flex items-center gap-2.5 px-4 py-2.5 rounded-full text-white font-semibold text-sm shadow-lg hover:scale-105 active:scale-95 transition-transform whitespace-nowrap min-h-[44px]"
             style={{ background: "linear-gradient(135deg, #9b59b6, #8e44ad)" }}
           >
-            <Bot size={20} />
+            <Bot size={18} />
             Live Chat
           </button>
         </div>
       )}
 
-      {/* Main Button */}
+      {/* Main Button — compact, tucked into corner */}
       <button
         onClick={toggleMain}
         aria-label="Chat with us"
-        className="flex items-center gap-2.5 px-5 py-3 rounded-full text-white font-bold text-base shadow-xl hover:scale-105 active:scale-95 transition-transform min-h-[56px]"
+        className="w-14 h-14 rounded-full text-white shadow-xl hover:scale-110 active:scale-95 transition-transform flex items-center justify-center"
         style={{
           background: "linear-gradient(135deg, #9b59b6, #8e44ad)",
-          boxShadow: "0 4px 20px rgba(155, 89, 182, 0.4)",
+          boxShadow: "0 4px 16px rgba(155, 89, 182, 0.4)",
         }}
       >
-        {view !== "closed" ? (
-          <X size={22} />
-        ) : (
-          <MessageCircle size={22} fill="currentColor" />
-        )}
-        Chat with us!
+        {view !== "closed" ? <X size={22} /> : <MessageCircle size={22} fill="currentColor" />}
       </button>
     </div>
   );
