@@ -1,30 +1,61 @@
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, X } from "lucide-react";
+import { useState } from "react";
 
-const WhatsAppButton = () => {
+const ChatButton = () => {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
-    <a
-      href="https://wa.me/1234567890"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="fixed z-40 group"
+    <div
+      className="fixed z-40"
       style={{
         bottom: "calc(1.5rem + env(safe-area-inset-bottom, 0px))",
         right: "1.25rem",
       }}
-      aria-label="Chat with us on WhatsApp"
     >
-      <div className="relative">
-        {/* Pulse ring */}
-        <div className="absolute inset-0 w-[60px] h-[60px] md:w-14 md:h-14 rounded-full bg-whatsapp animate-pulse-ring" />
-        <div className="w-[60px] h-[60px] md:w-14 md:h-14 rounded-full bg-whatsapp text-primary-foreground flex items-center justify-center shadow-lg active:scale-95 hover:scale-110 transition-transform relative z-10">
-          <MessageCircle size={28} fill="currentColor" />
+      {/* Options popup */}
+      {isOpen && (
+        <div className="absolute bottom-[calc(100%+12px)] right-0 flex flex-col gap-2 animate-fade-in">
+          <a
+            href="https://wa.me/1234567890"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 px-5 py-3 rounded-full bg-[#25D366] text-white font-semibold text-sm shadow-lg hover:scale-105 active:scale-95 transition-transform whitespace-nowrap min-h-[48px]"
+          >
+            <MessageCircle size={20} fill="currentColor" />
+            WhatsApp
+          </a>
+          <button
+            onClick={() => {
+              // TODO: integrate live chat provider
+              window.open("https://wa.me/1234567890", "_blank");
+            }}
+            className="flex items-center gap-3 px-5 py-3 rounded-full bg-primary text-primary-foreground font-semibold text-sm shadow-lg hover:scale-105 active:scale-95 transition-transform whitespace-nowrap min-h-[48px]"
+          >
+            <MessageCircle size={20} />
+            Live Chat
+          </button>
         </div>
-        <span className="absolute bottom-full right-0 mb-2 px-3 py-1.5 bg-card text-foreground text-xs font-medium rounded-lg shadow-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-border pointer-events-none">
-          Chat with us on WhatsApp
-        </span>
-      </div>
-    </a>
+      )}
+
+      {/* Main button */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        aria-label="Chat with us"
+        className="flex items-center gap-2.5 px-5 py-3 rounded-full bg-[hsl(var(--tamtam-purple,270_50%_60%))] text-white font-bold text-base shadow-xl hover:scale-105 active:scale-95 transition-transform min-h-[56px]"
+        style={{
+          background: "linear-gradient(135deg, #9b59b6, #8e44ad)",
+          boxShadow: "0 4px 20px rgba(155, 89, 182, 0.4)",
+        }}
+      >
+        {isOpen ? (
+          <X size={22} />
+        ) : (
+          <MessageCircle size={22} fill="currentColor" />
+        )}
+        Chat with us!
+      </button>
+    </div>
   );
 };
 
-export default WhatsAppButton;
+export default ChatButton;
