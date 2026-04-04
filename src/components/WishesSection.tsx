@@ -214,7 +214,7 @@ const WishesSection = () => {
                   <div className="text-6xl animate-bounce">💛</div>
                   <h3 className="text-2xl font-bold text-foreground">Thank you so much!</h3>
                   <p className="text-muted-foreground text-base max-w-xs mx-auto">
-                    You're making {selectedWish.name}'s dream closer to reality. Our team will reach out to you soon.
+                    You're making a child's dream closer to reality. Our team will reach out to you soon.
                   </p>
                 </div>
               ) : (
