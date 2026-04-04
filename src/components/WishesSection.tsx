@@ -145,7 +145,7 @@ const WishesSection = () => {
           </div>
           <div className="w-px bg-border" />
           <div className="text-center">
-            <div className="text-3xl md:text-4xl font-extrabold text-soft-green">5</div>
+            <div className="text-3xl md:text-4xl font-extrabold text-soft-green">{wishes.length}</div>
             <div className="text-xs md:text-sm text-muted-foreground font-medium">Wishes Waiting</div>
           </div>
         </div>
