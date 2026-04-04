@@ -1,20 +1,71 @@
 import { useState, useEffect, useRef } from "react";
 import { Heart, X, Sparkles, Gift } from "lucide-react";
 
-const wishes = [
-  { name: "Lara", age: 8, wish: "I wish I had a stuffed bunny to hug when I'm scared at the hospital.", emoji: "🐰", color: "from-pink-100 to-rose-50 border-pink-200" },
-  { name: "Karim", age: 10, wish: "I wish I could have art supplies so I can draw during my treatments.", emoji: "🎨", color: "from-blue-100 to-sky-50 border-blue-200" },
-  { name: "Maya", age: 7, wish: "I wish I could go to the zoo one day with my family.", emoji: "🦁", color: "from-green-100 to-emerald-50 border-green-200" },
-  { name: "Omar", age: 11, wish: "I wish I had a tablet so I can study and not fall behind in school.", emoji: "📚", color: "from-purple-100 to-violet-50 border-purple-200" },
-  { name: "Nour", age: 9, wish: "I wish I could have a birthday cake — I've never had one with candles.", emoji: "🎂", color: "from-amber-100 to-yellow-50 border-amber-200" },
+const CARD_STYLES = [
+  { emoji: "🌟", color: "from-pink-100 to-rose-50 border-pink-200" },
+  { emoji: "🎨", color: "from-blue-100 to-sky-50 border-blue-200" },
+  { emoji: "🦁", color: "from-green-100 to-emerald-50 border-green-200" },
+  { emoji: "📚", color: "from-purple-100 to-violet-50 border-purple-200" },
+  { emoji: "🎂", color: "from-amber-100 to-yellow-50 border-amber-200" },
+  { emoji: "🐰", color: "from-rose-100 to-pink-50 border-rose-200" },
 ];
 
+const fallbackWishes = [
+  { id: "1", wish_text: "I wish I had a stuffed bunny to hug when I'm scared at the hospital.", created_at: "" },
+  { id: "2", wish_text: "I wish I could have art supplies so I can draw during my treatments.", created_at: "" },
+  { id: "3", wish_text: "I wish I could go to the zoo one day with my family.", created_at: "" },
+  { id: "4", wish_text: "I wish I had a tablet so I can study and not fall behind in school.", created_at: "" },
+  { id: "5", wish_text: "I wish I could have a birthday cake — I've never had one with candles.", created_at: "" },
+];
+
+interface ApiWish {
+  id: string;
+  wish_text: string;
+  created_at: string;
+}
+
+interface DisplayWish {
+  id: string;
+  wish: string;
+  emoji: string;
+  color: string;
+}
+
+const API_URL = "http://Tamtam-backend-env.eba-mmqhvdqg.us-west-2.elasticbeanstalk.com/api/wishes/approved";
+
 const WishesSection = () => {
-  const [selectedWish, setSelectedWish] = useState<typeof wishes[0] | null>(null);
+  const [wishes, setWishes] = useState<DisplayWish[]>([]);
+  const [selectedWish, setSelectedWish] = useState<DisplayWish | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
   const sheetRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef({ startY: 0, currentY: 0, isDragging: false });
+
+  useEffect(() => {
+    fetch(API_URL)
+      .then((res) => res.json())
+      .then((data: ApiWish[]) => {
+        const source = data.length > 0 ? data : fallbackWishes;
+        setWishes(
+          source.map((w, i) => ({
+            id: w.id,
+            wish: w.wish_text,
+            emoji: CARD_STYLES[i % CARD_STYLES.length].emoji,
+            color: CARD_STYLES[i % CARD_STYLES.length].color,
+          }))
+        );
+      })
+      .catch(() => {
+        setWishes(
+          fallbackWishes.map((w, i) => ({
+            id: w.id,
+            wish: w.wish_text,
+            emoji: CARD_STYLES[i % CARD_STYLES.length].emoji,
+            color: CARD_STYLES[i % CARD_STYLES.length].color,
+          }))
+        );
+      });
+  }, []);
 
   useEffect(() => {
     document.body.style.overflow = selectedWish ? "hidden" : "";
