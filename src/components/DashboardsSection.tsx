@@ -295,63 +295,71 @@ const DashboardsSection = () => {
           </p>
         </div>
 
-        {/* Carousel */}
+        {/* 3D Card Stack */}
         <div className="relative scroll-animate">
           {/* Navigation arrows */}
           <button
             onClick={prev}
-            className="absolute left-0 md:left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-card border border-border/50 shadow-lg flex items-center justify-center text-foreground/70 hover:text-primary hover:border-primary/30 transition-all"
+            className="absolute left-0 md:left-4 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-card border border-border/50 shadow-lg flex items-center justify-center text-foreground/70 hover:text-primary hover:border-primary/30 transition-all"
             aria-label="Previous dashboard"
           >
             <ChevronLeft size={20} />
           </button>
           <button
             onClick={next}
-            className="absolute right-0 md:right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-card border border-border/50 shadow-lg flex items-center justify-center text-foreground/70 hover:text-primary hover:border-primary/30 transition-all"
+            className="absolute right-0 md:right-4 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-card border border-border/50 shadow-lg flex items-center justify-center text-foreground/70 hover:text-primary hover:border-primary/30 transition-all"
             aria-label="Next dashboard"
           >
             <ChevronRight size={20} />
           </button>
 
-          <div className="flex items-center justify-center relative h-[480px] md:h-[500px]">
-            {/* Left (peeking) */}
-            <div
-              className="absolute transition-all duration-500 ease-out cursor-pointer opacity-40 hover:opacity-60 hidden md:block"
-              style={{ left: "calc(50% - 340px)", zIndex: 5 }}
-              onClick={() => goTo(leftIndex)}
-            >
-              <PhoneMockup
-                dashboard={dashboards[leftIndex]}
-                activeScreen={activeScreens[leftIndex]}
-                scale={0.75}
-                interactive={false}
-              />
-            </div>
+          <div className="flex items-center justify-center relative h-[480px] md:h-[500px]" style={{ perspective: "1200px" }}>
+            {dashboards.map((dashboard, i) => {
+              const offset = ((i - activeDashboard + 3) % 3);
+              // 0 = center, 1 = right, 2 = left
+              const isCenter = offset === 0;
+              const isLeft = offset === 2;
+              const isRight = offset === 1;
 
-            {/* Center (active) */}
-            <div className="relative z-10 transition-all duration-500">
-              <PhoneMockup
-                dashboard={dashboards[activeDashboard]}
-                activeScreen={activeScreens[activeDashboard]}
-                onScreenChange={(i) => setScreenForDashboard(activeDashboard, i)}
-                scale={1}
-                interactive={true}
-              />
-            </div>
-
-            {/* Right (peeking) */}
-            <div
-              className="absolute transition-all duration-500 ease-out cursor-pointer opacity-40 hover:opacity-60 hidden md:block"
-              style={{ right: "calc(50% - 340px)", zIndex: 5 }}
-              onClick={() => goTo(rightIndex)}
-            >
-              <PhoneMockup
-                dashboard={dashboards[rightIndex]}
-                activeScreen={activeScreens[rightIndex]}
-                scale={0.75}
-                interactive={false}
-              />
-            </div>
+              return (
+                <div
+                  key={dashboard.id}
+                  className="absolute transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)]"
+                  style={{
+                    zIndex: isCenter ? 20 : 5,
+                    transform: isCenter
+                      ? "translateX(0) scale(1) rotateY(0deg)"
+                      : isLeft
+                        ? "translateX(-55%) scale(0.85) rotateY(25deg)"
+                        : "translateX(55%) scale(0.85) rotateY(-25deg)",
+                    opacity: isCenter ? 1 : 0.5,
+                    filter: isCenter ? "none" : "brightness(0.85)",
+                    cursor: isCenter ? "default" : "pointer",
+                    transformStyle: "preserve-3d",
+                  }}
+                  onClick={() => !isCenter && goTo(i)}
+                >
+                  <div
+                    style={{
+                      clipPath: isCenter
+                        ? "none"
+                        : isLeft
+                          ? "inset(0 0 0 0)"
+                          : "inset(0 0 0 0)",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <PhoneMockup
+                      dashboard={dashboard}
+                      activeScreen={activeScreens[i]}
+                      onScreenChange={isCenter ? (si) => setScreenForDashboard(i, si) : undefined}
+                      scale={1}
+                      interactive={isCenter}
+                    />
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           {/* Dots */}
