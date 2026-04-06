@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BarChart3, Brain, Building2, TrendingUp, Calendar, Heart, AlertCircle, Users, Activity, Star, Smile, BookOpen, MessageSquare, Clock, Zap } from "lucide-react";
+import { BarChart3, Brain, Building2, TrendingUp, Calendar, Heart, AlertCircle, Users, Activity, Star, Smile, BookOpen, MessageSquare, Clock, Zap, ChevronLeft, ChevronRight } from "lucide-react";
 
 const dashboards = [
   {
@@ -129,11 +129,11 @@ const MiniChart = ({ data, color }: { data: number[]; color: string }) => {
   const min = Math.min(...data);
   const range = max - min || 1;
   return (
-    <div className="flex items-end gap-[3px] h-10">
+    <div className="flex items-end gap-[3px] h-8">
       {data.map((v, i) => (
         <div
           key={i}
-          className={`w-2 rounded-sm ${color} transition-all duration-300`}
+          className={`w-1.5 rounded-sm ${color} transition-all duration-300`}
           style={{ height: `${((v - min) / range) * 100 * 0.7 + 30}%`, opacity: i === data.length - 1 ? 1 : 0.5 + (i / data.length) * 0.5 }}
         />
       ))}
@@ -141,21 +141,150 @@ const MiniChart = ({ data, color }: { data: number[]; color: string }) => {
   );
 };
 
-const DashboardsSection = () => {
-  const [activeDashboard, setActiveDashboard] = useState(0);
-  const [activeScreen, setActiveScreen] = useState(0);
-  const current = dashboards[activeDashboard];
-  const screen = current.screens[Math.min(activeScreen, current.screens.length - 1)];
-
-  const handleDashboardChange = (i: number) => {
-    setActiveDashboard(i);
-    setActiveScreen(0);
-  };
-
-  const chartColor = activeDashboard === 0 ? "bg-blue-500" : activeDashboard === 1 ? "bg-purple-500" : "bg-amber-500";
+const PhoneMockup = ({
+  dashboard,
+  activeScreen,
+  onScreenChange,
+  scale = 1,
+  interactive = true,
+}: {
+  dashboard: typeof dashboards[0];
+  activeScreen: number;
+  onScreenChange?: (i: number) => void;
+  scale?: number;
+  interactive?: boolean;
+}) => {
+  const screen = dashboard.screens[Math.min(activeScreen, dashboard.screens.length - 1)];
+  const chartColor = dashboard.id === "parent" ? "bg-blue-500" : dashboard.id === "psychologist" ? "bg-purple-500" : "bg-amber-500";
 
   return (
-    <section id="dashboards" className="py-16 md:py-20 lg:py-28 bg-soft-blue-light/20">
+    <div style={{ transform: `scale(${scale})`, transformOrigin: "center center" }} className="transition-transform duration-500">
+      <div className="bg-card rounded-[2rem] border-[3px] border-foreground/10 shadow-2xl overflow-hidden w-[260px]">
+        {/* Status bar */}
+        <div className="h-7 bg-muted/40 flex items-center justify-between px-4">
+          <span className="text-[8px] font-semibold text-muted-foreground">9:41</span>
+          <div className="w-14 h-1 rounded-full bg-border" />
+          <div className="w-3 h-1.5 rounded-sm bg-muted-foreground/40" />
+        </div>
+
+        {/* Header */}
+        <div className={`bg-gradient-to-r ${dashboard.gradient} px-4 py-3`}>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-white/20 backdrop-blur flex items-center justify-center text-white">
+              <dashboard.icon size={15} />
+            </div>
+            <div>
+              <h3 className="font-bold text-[11px] text-white leading-tight">{dashboard.title}</h3>
+              <p className="text-[9px] text-white/70">Last updated: Just now</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Screen tabs */}
+        <div className="flex gap-0.5 px-2 pt-2">
+          {dashboard.screens.map((s, i) => {
+            const Icon = s.icon;
+            return (
+              <button
+                key={s.label}
+                onClick={() => interactive && onScreenChange?.(i)}
+                className={`flex-1 py-1.5 rounded-lg text-[9px] font-bold transition-all flex items-center justify-center gap-1 ${
+                  activeScreen === i
+                    ? `bg-gradient-to-r ${dashboard.gradient} text-white shadow-sm`
+                    : "text-muted-foreground hover:bg-muted/50"
+                } ${!interactive ? 'pointer-events-none' : ''}`}
+              >
+                <Icon size={10} />
+                {s.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Mini chart */}
+        <div className="px-3 pt-2.5 pb-1.5">
+          <div className="bg-muted/20 rounded-lg p-2.5 flex items-center justify-between">
+            <div>
+              <p className="text-[8px] text-muted-foreground font-medium">7-Day Trend</p>
+              <p className="text-[10px] font-bold text-foreground mt-0.5">{screen.content[0].value}</p>
+            </div>
+            <MiniChart data={screen.chart} color={chartColor} />
+          </div>
+        </div>
+
+        {/* Content cards */}
+        <div className="px-3 pb-2 space-y-1.5">
+          {screen.content.map((item) => (
+            <div
+              key={item.label}
+              className="bg-muted/20 rounded-lg p-2.5 flex items-center justify-between group hover:bg-muted/40 transition-colors"
+            >
+              <div className="flex-1 min-w-0">
+                <p className="text-[8px] text-muted-foreground font-medium">{item.label}</p>
+                <p className="text-[11px] font-bold text-foreground mt-0.5">{item.value}</p>
+                <p className="text-[8px] text-muted-foreground/70 mt-0.5 truncate">{item.detail}</p>
+              </div>
+              {item.trend === "up" && (
+                <div className="w-5 h-5 rounded-full bg-accent/15 flex items-center justify-center flex-shrink-0 ml-2">
+                  <TrendingUp size={10} className="text-accent" />
+                </div>
+              )}
+              {item.trend === "alert" && (
+                <div className="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 ml-2">
+                  <AlertCircle size={10} className="text-red-500" />
+                </div>
+              )}
+              {item.trend === "neutral" && (
+                <div className="w-5 h-5 rounded-full bg-muted/50 flex items-center justify-center flex-shrink-0 ml-2">
+                  <Clock size={10} className="text-muted-foreground" />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Bottom nav */}
+        <div className="h-9 bg-muted/20 flex items-center justify-around px-4 border-t border-border/30">
+          <Heart size={12} className="text-muted-foreground/50" />
+          <BarChart3 size={12} className="text-primary" />
+          <BookOpen size={12} className="text-muted-foreground/50" />
+          <Users size={12} className="text-muted-foreground/50" />
+        </div>
+
+        {/* Home indicator */}
+        <div className="h-4 flex items-center justify-center">
+          <div className="w-20 h-1 rounded-full bg-border" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const DashboardsSection = () => {
+  const [activeDashboard, setActiveDashboard] = useState(0);
+  const [activeScreens, setActiveScreens] = useState([0, 0, 0]);
+
+  const goTo = (index: number) => {
+    setActiveDashboard(index);
+  };
+
+  const prev = () => setActiveDashboard((p) => (p - 1 + 3) % 3);
+  const next = () => setActiveDashboard((p) => (p + 1) % 3);
+
+  const setScreenForDashboard = (di: number, si: number) => {
+    setActiveScreens((prev) => {
+      const copy = [...prev];
+      copy[di] = si;
+      return copy;
+    });
+  };
+
+  const leftIndex = (activeDashboard - 1 + 3) % 3;
+  const rightIndex = (activeDashboard + 1) % 3;
+  const current = dashboards[activeDashboard];
+
+  return (
+    <section id="dashboards" className="py-16 md:py-20 lg:py-28 bg-soft-blue-light/20 overflow-hidden">
       <div className="container mx-auto px-5">
         <div className="text-center mb-10 md:mb-14 scroll-animate">
           <h2 className="text-[28px] md:text-4xl font-extrabold text-foreground mb-3 md:mb-4">
@@ -166,131 +295,89 @@ const DashboardsSection = () => {
           </p>
         </div>
 
-        {/* Dashboard selector */}
-        <div className="flex justify-center gap-2 mb-8 scroll-animate">
-          {dashboards.map((d, i) => (
-            <button
-              key={d.id}
-              onClick={() => handleDashboardChange(i)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all min-h-[48px] ${
-                activeDashboard === i
-                  ? `bg-gradient-to-r ${d.gradient} text-white shadow-lg scale-105`
-                  : "bg-card text-muted-foreground border border-border/50 hover:border-primary/30"
-              }`}
+        {/* Carousel */}
+        <div className="relative scroll-animate">
+          {/* Navigation arrows */}
+          <button
+            onClick={prev}
+            className="absolute left-0 md:left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-card border border-border/50 shadow-lg flex items-center justify-center text-foreground/70 hover:text-primary hover:border-primary/30 transition-all"
+            aria-label="Previous dashboard"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <button
+            onClick={next}
+            className="absolute right-0 md:right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-card border border-border/50 shadow-lg flex items-center justify-center text-foreground/70 hover:text-primary hover:border-primary/30 transition-all"
+            aria-label="Next dashboard"
+          >
+            <ChevronRight size={20} />
+          </button>
+
+          <div className="flex items-center justify-center relative h-[480px] md:h-[500px]">
+            {/* Left (peeking) */}
+            <div
+              className="absolute transition-all duration-500 ease-out cursor-pointer opacity-40 hover:opacity-60 hidden md:block"
+              style={{ left: "calc(50% - 340px)", zIndex: 5 }}
+              onClick={() => goTo(leftIndex)}
             >
-              <d.icon size={18} />
-              <span className="hidden sm:inline">{d.title.split(" ")[0]}</span>
-            </button>
-          ))}
-        </div>
+              <PhoneMockup
+                dashboard={dashboards[leftIndex]}
+                activeScreen={activeScreens[leftIndex]}
+                scale={0.75}
+                interactive={false}
+              />
+            </div>
 
-        {/* Phone mockup */}
-        <div className="max-w-md mx-auto scroll-animate">
-          <div className="relative mx-auto w-full max-w-[340px]">
-            <div className="bg-card rounded-[2.5rem] border-4 border-foreground/10 shadow-2xl overflow-hidden">
-              {/* Status bar */}
-              <div className="h-10 bg-muted/40 flex items-center justify-between px-6">
-                <span className="text-[10px] font-semibold text-muted-foreground">9:41</span>
-                <div className="w-20 h-1.5 rounded-full bg-border" />
-                <div className="flex gap-1">
-                  <div className="w-3.5 h-2 rounded-sm bg-muted-foreground/40" />
-                </div>
-              </div>
+            {/* Center (active) */}
+            <div className="relative z-10 transition-all duration-500">
+              <PhoneMockup
+                dashboard={dashboards[activeDashboard]}
+                activeScreen={activeScreens[activeDashboard]}
+                onScreenChange={(i) => setScreenForDashboard(activeDashboard, i)}
+                scale={1}
+                interactive={true}
+              />
+            </div>
 
-              {/* Header with gradient */}
-              <div className={`bg-gradient-to-r ${current.gradient} px-5 py-4`}>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center text-white">
-                    <current.icon size={20} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-sm text-white leading-tight">{current.title}</h3>
-                    <p className="text-[11px] text-white/70">Last updated: Just now</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Screen tabs */}
-              <div className="flex gap-1 px-3 pt-3">
-                {current.screens.map((s, i) => {
-                  const Icon = s.icon;
-                  return (
-                    <button
-                      key={s.label}
-                      onClick={() => setActiveScreen(i)}
-                      className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all min-h-[40px] flex items-center justify-center gap-1.5 ${
-                        activeScreen === i
-                          ? `bg-gradient-to-r ${current.gradient} text-white shadow-md`
-                          : "text-muted-foreground hover:bg-muted/50"
-                      }`}
-                    >
-                      <Icon size={13} />
-                      {s.label}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Mini chart */}
-              <div className="px-4 pt-4 pb-2">
-                <div className="bg-muted/20 rounded-xl p-3 flex items-center justify-between">
-                  <div>
-                    <p className="text-[10px] text-muted-foreground font-medium">7-Day Trend</p>
-                    <p className="text-xs font-bold text-foreground mt-0.5">
-                      {screen.content[0].value}
-                    </p>
-                  </div>
-                  <MiniChart data={screen.chart} color={chartColor} />
-                </div>
-              </div>
-
-              {/* Content cards */}
-              <div className="px-4 pb-3 space-y-2">
-                {screen.content.map((item) => (
-                  <div
-                    key={item.label}
-                    className="bg-muted/20 rounded-xl p-3.5 flex items-center justify-between animate-fade-in group hover:bg-muted/40 transition-colors"
-                  >
-                    <div className="flex-1">
-                      <p className="text-[10px] text-muted-foreground font-medium">{item.label}</p>
-                      <p className="text-sm font-bold text-foreground mt-0.5">{item.value}</p>
-                      <p className="text-[10px] text-muted-foreground/70 mt-0.5">{item.detail}</p>
-                    </div>
-                    {item.trend === "up" && (
-                      <div className="w-7 h-7 rounded-full bg-accent/15 flex items-center justify-center">
-                        <TrendingUp size={14} className="text-accent" />
-                      </div>
-                    )}
-                    {item.trend === "alert" && (
-                      <div className="w-7 h-7 rounded-full bg-red-100 flex items-center justify-center">
-                        <AlertCircle size={14} className="text-red-500" />
-                      </div>
-                    )}
-                    {item.trend === "neutral" && (
-                      <div className="w-7 h-7 rounded-full bg-muted/50 flex items-center justify-center">
-                        <Clock size={14} className="text-muted-foreground" />
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {/* Bottom nav */}
-              <div className="h-12 bg-muted/20 flex items-center justify-around px-6 border-t border-border/30">
-                <Heart size={16} className="text-muted-foreground/50" />
-                <BarChart3 size={16} className="text-primary" />
-                <BookOpen size={16} className="text-muted-foreground/50" />
-                <Users size={16} className="text-muted-foreground/50" />
-              </div>
-
-              {/* Home indicator */}
-              <div className="h-6 flex items-center justify-center">
-                <div className="w-28 h-1 rounded-full bg-border" />
-              </div>
+            {/* Right (peeking) */}
+            <div
+              className="absolute transition-all duration-500 ease-out cursor-pointer opacity-40 hover:opacity-60 hidden md:block"
+              style={{ right: "calc(50% - 340px)", zIndex: 5 }}
+              onClick={() => goTo(rightIndex)}
+            >
+              <PhoneMockup
+                dashboard={dashboards[rightIndex]}
+                activeScreen={activeScreens[rightIndex]}
+                scale={0.75}
+                interactive={false}
+              />
             </div>
           </div>
 
-          <p className="text-center text-muted-foreground text-sm leading-relaxed mt-6 max-w-sm mx-auto">
+          {/* Dots */}
+          <div className="flex justify-center gap-2 mt-4">
+            {dashboards.map((d, i) => (
+              <button
+                key={d.id}
+                onClick={() => goTo(i)}
+                className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                  activeDashboard === i
+                    ? "bg-primary scale-125"
+                    : "bg-border hover:bg-primary/40"
+                }`}
+                aria-label={`Go to ${d.title}`}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Description */}
+        <div className="text-center mt-6">
+          <div className="inline-flex items-center gap-2 mb-2">
+            <current.icon size={18} className="text-primary" />
+            <span className="font-bold text-foreground text-lg">{current.title}</span>
+          </div>
+          <p className="text-muted-foreground text-sm leading-relaxed max-w-sm mx-auto">
             {current.description}
           </p>
         </div>
