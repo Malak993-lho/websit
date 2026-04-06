@@ -13,10 +13,20 @@ export const useScrollAnimation = () => {
       { threshold: 0.1, rootMargin: "0px 0px -50px 0px" }
     );
 
-    document.querySelectorAll(".scroll-animate").forEach((el) => {
-      observer.observe(el);
-    });
+    const observeAll = () => {
+      document.querySelectorAll(".scroll-animate:not(.visible)").forEach((el) => {
+        observer.observe(el);
+      });
+    };
 
-    return () => observer.disconnect();
+    observeAll();
+
+    const mutationObserver = new MutationObserver(() => observeAll());
+    mutationObserver.observe(document.body, { childList: true, subtree: true });
+
+    return () => {
+      observer.disconnect();
+      mutationObserver.disconnect();
+    };
   }, []);
 };
