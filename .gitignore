@@ -7,6 +7,10 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Use npm + package-lock.json only (Cloudflare Pages / CI)
+bun.lock
+bun.lockb
+
 node_modules
 dist
 dist-ssr
