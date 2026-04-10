@@ -5,6 +5,11 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  // Relative paths; assets at dist root (matches S3 flat uploads)
+  base: "./",
+  build: {
+    assetsDir: ".",
+  },
   server: {
     host: "::",
     port: 8080,
