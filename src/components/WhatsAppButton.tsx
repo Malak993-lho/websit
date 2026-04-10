@@ -1,6 +1,7 @@
 import { MessageCircle, X, Send, Bot, ArrowLeft } from "lucide-react";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { io, type Socket } from "socket.io-client";
+import { getSocketUrl } from "@/lib/apiConfig";
 import { makeId } from "@/lib/utils";
 
 type Message = {
@@ -33,9 +34,6 @@ type NewMessagePayload = {
 const LS_CONVERSATION_ID = "tamtam_live_chat_conversation_id";
 /** Optional: set from elsewhere on the site via localStorage when visitor name is known */
 const LS_VISITOR_NAME = "tamtam_live_chat_visitor_name";
-
-const DEFAULT_SOCKETIO_URL =
-  "http://Admin-backend-env.eba-9pw38gcy.us-west-2.elasticbeanstalk.com";
 
 const WELCOME_ID = "welcome";
 
@@ -111,7 +109,7 @@ const ChatButton = () => {
   }, [view]);
 
   useEffect(() => {
-    const url = import.meta.env.VITE_SOCKETIO_URL?.replace(/\/+$/, "") || DEFAULT_SOCKETIO_URL;
+    const url = getSocketUrl();
     const convId = conversationIdRef.current;
 
     const socket = io(url, {

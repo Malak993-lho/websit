@@ -2,11 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Send, Shield, Heart, Users } from "lucide-react";
 import tamtamLogo from "@/assets/tamtam-logo.jpeg";
-import {
-  ACCESS_REQUEST_ENDPOINT,
-  ADMIN_BACKEND_BASE_URL,
-  createAccessRequest,
-} from "@/services/accessRequests";
+import { getApiBaseUrl } from "@/lib/apiConfig";
+import { ACCESS_REQUEST_ENDPOINT, createAccessRequest } from "@/services/accessRequests";
 
 const emptyRoleExtras = {
   children_count: "",
@@ -225,7 +222,7 @@ const RequestAccess = () => {
         message: composedReason,
       });
       console.info("[RequestAccess] Submit success", {
-        baseUrl: ADMIN_BACKEND_BASE_URL,
+        baseUrl: getApiBaseUrl(),
         endpoint: ACCESS_REQUEST_ENDPOINT,
         payload: result.payload,
       });
@@ -236,7 +233,7 @@ const RequestAccess = () => {
           ? error.message
           : "Something went wrong while submitting your request. Please try again.";
       console.error("[RequestAccess] Submit error", {
-        baseUrl: ADMIN_BACKEND_BASE_URL,
+        baseUrl: getApiBaseUrl(),
         endpoint: ACCESS_REQUEST_ENDPOINT,
         error,
       });

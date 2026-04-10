@@ -1,8 +1,6 @@
-const ACCESS_REQUEST_URL =
-  "http://Admin-backend-env.eba-9pw38gcy.us-west-2.elasticbeanstalk.com/admin/access-requests";
+import { getApiBaseUrl } from "@/lib/apiConfig";
+
 const ACCESS_REQUEST_ENDPOINT = "/admin/access-requests";
-const ADMIN_BACKEND_BASE_URL =
-  "http://Admin-backend-env.eba-9pw38gcy.us-west-2.elasticbeanstalk.com";
 
 export interface AccessRequestFormInput {
   name: string;
@@ -18,6 +16,10 @@ export interface AccessRequestPayload {
   reason: string;
 }
 
+function accessRequestUrl(): string {
+  return `${getApiBaseUrl()}${ACCESS_REQUEST_ENDPOINT}`;
+}
+
 function normalizeInput(input: AccessRequestFormInput): AccessRequestPayload {
   return {
     full_name: input.name.trim(),
@@ -29,12 +31,13 @@ function normalizeInput(input: AccessRequestFormInput): AccessRequestPayload {
 
 export async function createAccessRequest(input: AccessRequestFormInput) {
   const payload = normalizeInput(input);
+  const url = accessRequestUrl();
   console.info("[RequestAccess] Sending access request", {
-    url: ACCESS_REQUEST_URL,
+    url,
     payload,
   });
 
-  const response = await fetch(ACCESS_REQUEST_URL, {
+  const response = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -59,7 +62,7 @@ export async function createAccessRequest(input: AccessRequestFormInput) {
     }
 
     console.error("[RequestAccess] Submission failed", {
-      url: ACCESS_REQUEST_URL,
+      url,
       status: response.status,
       statusText: response.statusText,
       payload,
@@ -67,25 +70,21 @@ export async function createAccessRequest(input: AccessRequestFormInput) {
     });
 
     throw new Error(
-      `Request Access submit failed (${response.status} ${response.statusText}) at ${ACCESS_REQUEST_URL}: ${errorMessage}`,
+      `Request Access submit failed (${response.status} ${response.statusText}) at ${url}: ${errorMessage}`,
     );
   }
 
   console.info("[RequestAccess] Submission succeeded", {
-    url: ACCESS_REQUEST_URL,
+    url,
     payload,
     status: response.status,
   });
 
   return {
     endpoint: ACCESS_REQUEST_ENDPOINT,
-    url: ACCESS_REQUEST_URL,
+    url,
     payload,
   };
 }
 
-export {
-  ACCESS_REQUEST_ENDPOINT,
-  ACCESS_REQUEST_URL,
-  ADMIN_BACKEND_BASE_URL,
-};
+export { ACCESS_REQUEST_ENDPOINT };
