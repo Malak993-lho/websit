@@ -1,0 +1,35 @@
+TamTam Flask backend — Elastic Beanstalk
+========================================
+
+Public API (marketing site)
+---------------------------
+  GET  /api/community/public   → JSON { counts, latest_posts[], latest_wishes[] }
+  GET  /api/wishes/approved    → JSON [ { id, wish_text, created_at }, ... ]
+  (Only wishes with is_approved = true are returned.)
+
+Socket.IO (unchanged)
+---------------------
+  Events: join_admin, request_conversations, join_conversation, leave_conversation,
+          admin_send_message, user_send_message
+
+Environment variables (set in EB console)
+-----------------------------------------
+  SECRET_KEY
+  DATABASE_URL or SQLALCHEMY_DATABASE_URI  (PostgreSQL recommended for production)
+  CORS_ORIGINS                             (optional; comma-separated or *)
+
+PostgreSQL (run manually on RDS when needed)
+--------------------------------------------
+  sql/production_wishes_schema_fix.sql
+    — add is_approved / created_at if missing (idempotent).
+
+  sql/wishes_is_approved_default_false.sql
+    — set column DEFAULT false for new rows (does not update existing rows).
+
+After deploy, verify:
+  curl -s https://YOUR_DOMAIN/api/community/public | head -c 500
+
+Included files
+--------------
+  application.py, Procfile, requirements.txt, run.py, app/ (full package)
+  sql/*.sql  (operators run against Postgres; not executed by the app)
