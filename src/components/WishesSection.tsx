@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { Heart, X, Sparkles, Gift } from "lucide-react";
-import { getApiBaseUrl } from "@/lib/apiConfig";
 
 const CARD_STYLES = [
   { emoji: "🌟", color: "from-pink-100 to-rose-50 border-pink-200" },
@@ -25,17 +24,6 @@ interface ApiWish {
   created_at: string;
 }
 
-/** Shape from GET /api/community/public */
-interface CommunityWishPayload {
-  id: number;
-  wishText: string;
-  timestamp?: string;
-}
-
-interface CommunityPublicResponse {
-  latest_wishes?: CommunityWishPayload[];
-}
-
 interface DisplayWish {
   id: string;
   wish: string;
@@ -43,38 +31,7 @@ interface DisplayWish {
   color: string;
 }
 
-function normalizeWishesFromCommunity(data: CommunityPublicResponse): ApiWish[] {
-  const list = data.latest_wishes ?? [];
-  return list.map((w) => ({
-    id: String(w.id),
-    wish_text: w.wishText,
-    created_at: w.timestamp ?? "",
-  }));
-}
-
-/** Try public community endpoint (Admin backend), then legacy flat array endpoint. */
-async function fetchApprovedWishes(): Promise<ApiWish[]> {
-  const base = getApiBaseUrl();
-  const communityUrl = `${base}/api/community/public`;
-  const legacyUrl = `${base}/api/wishes/approved`;
-
-  const tryCommunity = await fetch(communityUrl);
-  if (tryCommunity.ok) {
-    const data: CommunityPublicResponse = await tryCommunity.json();
-    const normalized = normalizeWishesFromCommunity(data);
-    if (normalized.length > 0) return normalized;
-  }
-
-  const tryLegacy = await fetch(legacyUrl);
-  if (tryLegacy.ok) {
-    const data: unknown = await tryLegacy.json();
-    if (Array.isArray(data)) {
-      return data as ApiWish[];
-    }
-  }
-
-  throw new Error("No wishes endpoint returned data");
-}
+const API_URL = "https://tamtamapi.xyz/api/wishes/approved";
 
 const WishesSection = () => {
   const [wishes, setWishes] = useState<DisplayWish[]>([]);
@@ -85,8 +42,9 @@ const WishesSection = () => {
   const dragRef = useRef({ startY: 0, currentY: 0, isDragging: false });
 
   useEffect(() => {
-    fetchApprovedWishes()
-      .then((data) => {
+    fetch(API_URL)
+      .then((res) => res.json())
+      .then((data: ApiWish[]) => {
         const source = data.length > 0 ? data : fallbackWishes;
         setWishes(
           source.map((w, i) => ({
@@ -94,7 +52,7 @@ const WishesSection = () => {
             wish: w.wish_text,
             emoji: CARD_STYLES[i % CARD_STYLES.length].emoji,
             color: CARD_STYLES[i % CARD_STYLES.length].color,
-          })),
+          }))
         );
       })
       .catch(() => {
@@ -104,7 +62,7 @@ const WishesSection = () => {
             wish: w.wish_text,
             emoji: CARD_STYLES[i % CARD_STYLES.length].emoji,
             color: CARD_STYLES[i % CARD_STYLES.length].color,
-          })),
+          }))
         );
       });
   }, []);
