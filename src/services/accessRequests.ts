@@ -1,10 +1,4 @@
-/**
- * Public "Request Access" form → Elastic Beanstalk admin API (underscore routes).
- * Wishes/socket still use getApiBaseUrl(); do not mix.
- */
-const ACCESS_REQUEST_API_BASE =
-  import.meta.env.VITE_ACCESS_REQUEST_API_URL?.trim() ||
-  "http://admin-backend-env.eba-9pw38gcy.us-west-2.elasticbeanstalk.com";
+import { getApiBaseUrl } from "@/lib/apiConfig";
 
 export const ACCESS_REQUEST_ENDPOINT = "/admin/access_requests";
 
@@ -15,7 +9,6 @@ export interface AccessRequestFormInput {
   message?: string;
 }
 
-/** JSON body expected by Flask POST /admin/access_requests */
 export interface AccessRequestPayload {
   name: string;
   email: string;
@@ -24,7 +17,7 @@ export interface AccessRequestPayload {
 }
 
 function accessRequestUrl(): string {
-  const base = ACCESS_REQUEST_API_BASE.replace(/\/+$/, "");
+  const base = getApiBaseUrl().replace(/\/+$/, "");
   return `${base}${ACCESS_REQUEST_ENDPOINT}`;
 }
 
@@ -58,38 +51,23 @@ export async function createAccessRequest(input: AccessRequestFormInput) {
   try {
     responseBody = responseText ? JSON.parse(responseText) : null;
   } catch {
-    // leave as raw text
+    // keep raw
   }
 
   console.info("[RequestAccess] response status", response.status);
   console.info("[RequestAccess] response body", responseBody);
 
   if (!response.ok) {
-    let errorMessage = `${response.status} ${response.statusText}`;
-    if (responseBody && typeof responseBody === "object" && responseBody !== null) {
-      const o = responseBody as Record<string, unknown>;
-      errorMessage = String(o.error || o.message || errorMessage);
-    } else if (typeof responseBody === "string" && responseBody) {
-      errorMessage = responseBody;
-    }
-
     console.error("[RequestAccess] Submission failed", {
       url,
       status: response.status,
       payload,
       responseBody,
     });
-
-    throw new Error(
-      `Request Access submit failed (${response.status} ${response.statusText}) at ${url}: ${errorMessage}`,
-    );
+    throw new Error(`Request Access HTTP ${response.status}`);
   }
 
-  console.info("[RequestAccess] Submission succeeded", {
-    url,
-    payload,
-    status: response.status,
-  });
+  console.info("[RequestAccess] Submission succeeded", { url, payload, status: response.status });
 
   return {
     endpoint: ACCESS_REQUEST_ENDPOINT,
