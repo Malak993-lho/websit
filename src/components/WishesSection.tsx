@@ -53,8 +53,7 @@ function normalizeWishesFromCommunity(data: CommunityPublicResponse): ApiWish[] 
 }
 
 /**
- * Prefer `/api/wishes/approved` first: default host (tamtamapi.xyz) serves it but returns 404
- * for `/api/community/public`, which would spam the console with a failed request every load.
+ * Prefer `/api/wishes/approved` first; fall back to `/api/community/public` if needed.
  */
 async function fetchApprovedWishes(): Promise<ApiWish[]> {
   const base = getWishesApiBaseUrl();

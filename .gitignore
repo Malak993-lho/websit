@@ -7,7 +7,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Use npm + package-lock.json only (Cloudflare Pages / CI)
+# Use npm + package-lock.json only
 bun.lock
 bun.lockb
 
@@ -19,7 +19,7 @@ dist
 dist-ssr
 *.local
 
-# Editor directories and files
+# Editor
 .vscode/*
 !.vscode/extensions.json
 .idea

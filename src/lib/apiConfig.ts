@@ -1,36 +1,35 @@
 /**
- * Single place for public API + Socket.IO origins.
+ * API + Socket.IO base URLs.
  *
- * Deployed S3 site is https → browsers block http:// and non-secure WebSocket to EB.
- * Set VITE_API_URL (e.g. https://tamtamapi.xyz) and optionally VITE_SOCKETIO_URL if Socket.IO
- * is on a different host (must still be https/wss from the browser).
+ * Source of truth: `VITE_API_URL` (see `.env` / `.env.example`).
+ * Fallback (if env unset): Admin Elastic Beanstalk backend until DNS/custom domain is ready.
+ * Optional: `VITE_SOCKETIO_URL` when Socket.IO is not on the same host as the API.
  */
 function trimTrailingSlashes(s: string): string {
   return s.replace(/\/+$/, "");
 }
 
-export function getApiBaseUrl(): string {
-  // Dev server: use same-origin paths so Vite can proxy to the API (avoids CORS on localhost).
-  if (import.meta.env.DEV) return "";
+/** Admin EB public HTTP origin (no trailing slash). Not tamtamapi.xyz / not localhost API. */
+const DEFAULT_API_BASE =
+  "http://Admin-backend-env.eba-9pw38gcy.us-west-2.elasticbeanstalk.com";
+
+function resolveApiBaseUrl(): string {
   const raw = import.meta.env.VITE_API_URL?.trim();
   if (raw) return trimTrailingSlashes(raw);
-  return "https://tamtamapi.xyz";
+  return trimTrailingSlashes(DEFAULT_API_BASE);
 }
 
-/**
- * Always resolves to the real API origin (never empty). Use for public GETs that are not
- * proxied on the dev server (e.g. Wishes). Request Access keeps using getApiBaseUrl() + proxy.
- */
+export function getApiBaseUrl(): string {
+  return resolveApiBaseUrl();
+}
+
 export function getWishesApiBaseUrl(): string {
-  const raw = import.meta.env.VITE_API_URL?.trim();
-  if (raw) return trimTrailingSlashes(raw);
-  return "https://tamtamapi.xyz";
+  return resolveApiBaseUrl();
 }
 
 /** Socket.IO server URL (no path; client uses /socket.io/ automatically). */
 export function getSocketUrl(): string {
-  if (import.meta.env.DEV) return "";
   const raw = import.meta.env.VITE_SOCKETIO_URL?.trim();
   if (raw) return trimTrailingSlashes(raw);
-  return getApiBaseUrl();
+  return resolveApiBaseUrl();
 }
