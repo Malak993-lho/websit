@@ -46,7 +46,13 @@ def register_live_chat_handlers(socketio: SocketIO) -> None:
         if not cid:
             return
         join_room(_conv_room(cid))
-        emit("chat_history", store.get_chat_history_payload(cid))
+        hist = store.get_chat_history_payload(cid)
+        print(
+            "[live-chat] join_conversation",
+            f"cid={cid}",
+            f"history_count={len((hist or {}).get('messages') or [])}",
+        )
+        emit("chat_history", hist)
 
     @socketio.on("leave_conversation")
     def on_leave_conversation(data: Dict[str, Any]) -> None:
@@ -67,6 +73,7 @@ def register_live_chat_handlers(socketio: SocketIO) -> None:
         if not store.has_conversation(cid):
             return
         msg = store.add_admin_message(cid, text)
+        print("[live-chat] admin_send_message", f"cid={cid}", f"msg_id={msg.get('id')}")
         payload = {"conversation_id": cid, "message": msg}
         socketio.emit("new_message", payload, room=_conv_room(cid))
         _emit_conversations_list_to_admin(socketio)
@@ -99,6 +106,12 @@ def register_live_chat_handlers(socketio: SocketIO) -> None:
         except ValueError:
             return
 
+        print(
+            "[live-chat] user_send_message",
+            f"cid={conversation_id}",
+            f"msg_id={msg.get('id')}",
+            f"len={len(text)}",
+        )
         socketio.emit(
             "new_message",
             {"conversation_id": conversation_id, "message": msg},

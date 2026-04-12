@@ -12,6 +12,9 @@ bun.lock
 bun.lockb
 
 node_modules
+__pycache__/
+*.py[cod]
+vite.config.ts.timestamp-*.mjs
 dist
 dist-ssr
 *.local

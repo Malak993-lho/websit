@@ -73,8 +73,13 @@ def create_app() -> Flask:
         print("Origin:", request.headers.get("Origin"))
 
     db.init_app(flask_app)
-    # Socket.IO Engine.IO handshake must allow the same browser origins as REST.
-    socketio.init_app(flask_app, cors_allowed_origins="*")
+    # Socket.IO async mode: unset → auto (eventlet under gunicorn --worker-class eventlet).
+    # Local `python run.py` sets SOCKETIO_ASYNC_MODE=threading in run.py before create_app().
+    _sio_mode = (os.environ.get("SOCKETIO_ASYNC_MODE") or "").strip().lower()
+    _sio_kw: dict = {"cors_allowed_origins": "*"}
+    if _sio_mode in ("threading", "eventlet", "gevent"):
+        _sio_kw["async_mode"] = _sio_mode
+    socketio.init_app(flask_app, **_sio_kw)
 
     from app.admin.access_requests import admin_access_bp
     from app.public_wishes import community_bp, seed_wishes_if_empty, wishes_bp

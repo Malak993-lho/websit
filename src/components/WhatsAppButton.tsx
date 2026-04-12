@@ -82,6 +82,21 @@ function mapServerMessage(m: {
   };
 }
 
+/** Drop duplicate ids from history so the same server row never renders twice. */
+function dedupeHistoryById(
+  rows: ChatHistoryPayload["messages"] | undefined,
+): NonNullable<ChatHistoryPayload["messages"]> {
+  const seen = new Set<string>();
+  const out: NonNullable<ChatHistoryPayload["messages"]> = [];
+  for (const m of rows || []) {
+    const id = String(m?.id ?? "");
+    if (!id || seen.has(id)) continue;
+    seen.add(id);
+    out.push(m);
+  }
+  return out;
+}
+
 const ChatButton = () => {
   const [view, setView] = useState<"closed" | "menu" | "chat">("closed");
   const [messages, setMessages] = useState<Message[]>(() => [createWelcomeMessage()]);
@@ -90,8 +105,14 @@ const ChatButton = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const socketRef = useRef<Socket | null>(null);
+  /** Stable for this tab: persisted in localStorage via getOrCreateConversationId (survives socket reconnect). */
   const conversationIdRef = useRef<string>(getOrCreateConversationId());
   const awaitingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const manualReconnectRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** Pairs optimistic rows with server echo (same text may be sent twice; order is FIFO). */
+  const pendingOutboundRef = useRef<{ localId: string; text: string }[]>([]);
+  /** Server-issued message ids already merged into UI (guards duplicate events / races). */
+  const seenServerMessageIdsRef = useRef<Set<string>>(new Set());
 
   const clearAwaitingTimeout = useCallback(() => {
     if (awaitingTimeoutRef.current) {
@@ -113,30 +134,119 @@ const ChatButton = () => {
     const convId = conversationIdRef.current;
 
     const socket = io(url, {
-      transports: ["websocket", "polling"],
+      // Polling first: stable through Vite’s HTTP proxy; then upgrade to WebSocket when supported.
+      transports: ["polling", "websocket"],
       autoConnect: true,
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 8000,
     });
     socketRef.current = socket;
 
     const joinRoom = () => {
-      socket.emit("join_conversation", { conversation_id: convId });
+      const joinPayload = { conversation_id: conversationIdRef.current };
+      console.info("[TamTam live chat] emit join_conversation", joinPayload);
+      socket.emit("join_conversation", joinPayload);
+    };
+
+    const clearManualReconnect = () => {
+      if (manualReconnectRef.current) {
+        clearTimeout(manualReconnectRef.current);
+        manualReconnectRef.current = null;
+      }
+    };
+
+    const scheduleManualReconnect = () => {
+      if (manualReconnectRef.current) return;
+      manualReconnectRef.current = setTimeout(() => {
+        manualReconnectRef.current = null;
+        if (!socket.connected) {
+          console.info("[TamTam live chat] manual reconnect attempt");
+          socket.connect();
+        }
+      }, 2500);
     };
 
     const onConnect = () => {
+      clearManualReconnect();
+      const transport = socket.io.engine?.transport?.name;
+      console.info("[TamTam live chat] connected", { id: socket.id, transport });
       joinRoom();
     };
 
+    const onDisconnect = (reason: string) => {
+      console.info("[TamTam live chat] disconnected", reason);
+      // Server closed the socket; client will not auto-reconnect unless we open again.
+      if (reason === "io server disconnect") {
+        scheduleManualReconnect();
+      }
+    };
+
+    const onReconnectFailed = () => {
+      console.warn("[TamTam live chat] reconnect_failed, scheduling retry");
+      scheduleManualReconnect();
+    };
+
+    const onConnectError = (err: Error) => {
+      console.warn("[TamTam live chat] connect_error", err?.message ?? err);
+    };
+
     const onChatHistory = (data: ChatHistoryPayload) => {
+      console.info("[TamTam live chat] chat_history", {
+        conversation_id: data.conversation_id,
+        count: data.messages?.length ?? 0,
+      });
       if (data.conversation_id !== convId) return;
-      const rest = (data.messages || []).map(mapServerMessage);
+      pendingOutboundRef.current = [];
+      const rows = dedupeHistoryById(data.messages);
+      seenServerMessageIdsRef.current = new Set(rows.map((m) => String(m.id)));
+      const rest = rows.map(mapServerMessage);
       setMessages([createWelcomeMessage(), ...rest]);
     };
 
     const onNewMessage = (data: NewMessagePayload) => {
+      const mid = data.message?.id;
+      console.info("[TamTam live chat] new_message", {
+        conversation_id: data.conversation_id,
+        msg_id: mid,
+        is_admin: data.message?.is_admin,
+      });
       if (data.conversation_id !== convId || !data.message) return;
+      const sid = String(data.message.id ?? "");
+      if (!sid || seenServerMessageIdsRef.current.has(sid)) return;
+      seenServerMessageIdsRef.current.add(sid);
+
       const incoming = mapServerMessage(data.message);
       setMessages((prev) => {
         if (prev.some((m) => m.id === incoming.id)) return prev;
+        // Drop optimistic local row when server echoes the same user message (IDs differ).
+        if (!data.message.is_admin) {
+          const t = incoming.content.trim();
+          const pending = pendingOutboundRef.current;
+          const pIdx = pending.findIndex((p) => p.text.trim() === t);
+          if (pIdx !== -1) {
+            const { localId } = pending[pIdx];
+            pending.splice(pIdx, 1);
+            const byId = prev.findIndex((m) => m.id === localId);
+            if (byId !== -1) {
+              const next = [...prev];
+              next.splice(byId, 1);
+              return [...next, incoming];
+            }
+          }
+          const localIdx = prev.findIndex(
+            (m) =>
+              m.role === "user" &&
+              m.id.startsWith("local_") &&
+              m.content.trim() === t,
+          );
+          if (localIdx !== -1) {
+            const next = [...prev];
+            next.splice(localIdx, 1);
+            return [...next, incoming];
+          }
+        }
         return [...prev, incoming];
       });
       if (data.message.is_admin) {
@@ -146,6 +256,9 @@ const ChatButton = () => {
     };
 
     socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+    socket.on("connect_error", onConnectError);
+    socket.io.on("reconnect_failed", onReconnectFailed);
     socket.on("chat_history", onChatHistory);
     socket.on("new_message", onNewMessage);
 
@@ -155,7 +268,11 @@ const ChatButton = () => {
 
     return () => {
       clearAwaitingTimeout();
+      clearManualReconnect();
+      socket.io.off("reconnect_failed", onReconnectFailed);
       socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+      socket.off("connect_error", onConnectError);
       socket.off("chat_history", onChatHistory);
       socket.off("new_message", onNewMessage);
       socket.disconnect();
@@ -171,7 +288,7 @@ const ChatButton = () => {
     const convId = conversationIdRef.current;
 
     const userMsg: Message = {
-      id: `local_${Date.now()}`,
+      id: `local_${makeId()}`,
       role: "user",
       content: text,
       timestamp: new Date(),
@@ -180,6 +297,7 @@ const ChatButton = () => {
     setInput("");
 
     if (socket?.connected) {
+      pendingOutboundRef.current.push({ localId: userMsg.id, text });
       setIsTyping(true);
       clearAwaitingTimeout();
       awaitingTimeoutRef.current = setTimeout(() => {
@@ -188,11 +306,13 @@ const ChatButton = () => {
       }, 45000);
 
       const name = getVisitorName();
-      socket.emit("user_send_message", {
+      const payload = {
         conversation_id: convId,
         text,
         ...(name ? { name } : {}),
-      });
+      };
+      console.info("[TamTam live chat] emit user_send_message", payload);
+      socket.emit("user_send_message", payload);
     }
   };
 

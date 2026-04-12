@@ -324,8 +324,9 @@ const DashboardsSection = () => {
               return (
                 <div
                   key={dashboard.id}
-                  className="absolute transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)]"
+                  className="absolute transition-all duration-700"
                   style={{
+                    transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
                     zIndex: isCenter ? 20 : 5,
                     transform: isCenter
                       ? "translateX(0) scale(1) rotateY(0deg)"

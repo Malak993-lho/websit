@@ -29,10 +29,11 @@ export default defineConfig(({ mode }) => {
     proxy: {
       "/admin": { target: apiProxyTarget, changeOrigin: true, secure: true },
       "/api": { target: apiProxyTarget, changeOrigin: true, secure: true },
+      // Local Flask is http:// — secure:true can confuse the WS upgrade to /socket.io
       "/socket.io": {
         target: apiProxyTarget,
         changeOrigin: true,
-        secure: true,
+        secure: false,
         ws: true,
       },
     },
