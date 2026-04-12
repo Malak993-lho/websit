@@ -10,6 +10,8 @@ function trimTrailingSlashes(s: string): string {
 }
 
 export function getApiBaseUrl(): string {
+  // Dev server: use same-origin paths so Vite can proxy to the API (avoids CORS on localhost).
+  if (import.meta.env.DEV) return "";
   const raw = import.meta.env.VITE_API_URL?.trim();
   if (raw) return trimTrailingSlashes(raw);
   return "https://tamtamapi.xyz";
@@ -17,6 +19,7 @@ export function getApiBaseUrl(): string {
 
 /** Socket.IO server URL (no path; client uses /socket.io/ automatically). */
 export function getSocketUrl(): string {
+  if (import.meta.env.DEV) return "";
   const raw = import.meta.env.VITE_SOCKETIO_URL?.trim();
   if (raw) return trimTrailingSlashes(raw);
   return getApiBaseUrl();

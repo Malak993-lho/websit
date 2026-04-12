@@ -34,6 +34,20 @@ class Wish(db.Model):
     created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
 
 
+class AccessRequest(db.Model):
+    """Invitation requests from the public site; moderated via admin dashboard."""
+
+    __tablename__ = "access_requests"
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(255), nullable=False)
+    email = db.Column(db.String(255), nullable=False, index=True)
+    role = db.Column(db.String(255), nullable=False)
+    reason = db.Column(db.Text, nullable=False, default="")
+    status = db.Column(db.String(32), nullable=False, default="pending")
+    created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
+
+
 class LiveChatMessage(db.Model):
     __tablename__ = "live_chat_messages"
 

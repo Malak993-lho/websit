@@ -1,6 +1,12 @@
-import { getApiBaseUrl } from "@/lib/apiConfig";
+/**
+ * Public "Request Access" form → Elastic Beanstalk admin API (underscore routes).
+ * Wishes/socket still use getApiBaseUrl(); do not mix.
+ */
+const ACCESS_REQUEST_API_BASE =
+  import.meta.env.VITE_ACCESS_REQUEST_API_URL?.trim() ||
+  "http://admin-backend-env.eba-9pw38gcy.us-west-2.elasticbeanstalk.com";
 
-const ACCESS_REQUEST_ENDPOINT = "/admin/access-requests";
+export const ACCESS_REQUEST_ENDPOINT = "/admin/access_requests";
 
 export interface AccessRequestFormInput {
   name: string;
@@ -9,20 +15,22 @@ export interface AccessRequestFormInput {
   message?: string;
 }
 
+/** JSON body expected by Flask POST /admin/access_requests */
 export interface AccessRequestPayload {
-  full_name: string;
+  name: string;
   email: string;
   role: string;
   reason: string;
 }
 
 function accessRequestUrl(): string {
-  return `${getApiBaseUrl()}${ACCESS_REQUEST_ENDPOINT}`;
+  const base = ACCESS_REQUEST_API_BASE.replace(/\/+$/, "");
+  return `${base}${ACCESS_REQUEST_ENDPOINT}`;
 }
 
 function normalizeInput(input: AccessRequestFormInput): AccessRequestPayload {
   return {
-    full_name: input.name.trim(),
+    name: input.name.trim(),
     email: input.email.trim().toLowerCase(),
     role: input.role.trim(),
     reason: (input.message || "").trim(),
@@ -32,41 +40,44 @@ function normalizeInput(input: AccessRequestFormInput): AccessRequestPayload {
 export async function createAccessRequest(input: AccessRequestFormInput) {
   const payload = normalizeInput(input);
   const url = accessRequestUrl();
-  console.info("[RequestAccess] Sending access request", {
-    url,
-    payload,
-  });
+
+  console.info("[RequestAccess] request URL", url);
+  console.info("[RequestAccess] request body", payload);
 
   const response = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      Accept: "application/json",
     },
     body: JSON.stringify(payload),
   });
 
+  const responseText = await response.text();
+  let responseBody: unknown = responseText;
+  try {
+    responseBody = responseText ? JSON.parse(responseText) : null;
+  } catch {
+    // leave as raw text
+  }
+
+  console.info("[RequestAccess] response status", response.status);
+  console.info("[RequestAccess] response body", responseBody);
+
   if (!response.ok) {
     let errorMessage = `${response.status} ${response.statusText}`;
-    let errorBody: unknown = null;
-    try {
-      const data = await response.json();
-      errorBody = data;
-      errorMessage = data.error || data.message || errorMessage;
-    } catch {
-      try {
-        const text = await response.text();
-        errorBody = text;
-      } catch {
-        // Keep fallback status text if backend did not return parsable body.
-      }
+    if (responseBody && typeof responseBody === "object" && responseBody !== null) {
+      const o = responseBody as Record<string, unknown>;
+      errorMessage = String(o.error || o.message || errorMessage);
+    } else if (typeof responseBody === "string" && responseBody) {
+      errorMessage = responseBody;
     }
 
     console.error("[RequestAccess] Submission failed", {
       url,
       status: response.status,
-      statusText: response.statusText,
       payload,
-      responseBody: errorBody,
+      responseBody,
     });
 
     throw new Error(
@@ -84,7 +95,7 @@ export async function createAccessRequest(input: AccessRequestFormInput) {
     endpoint: ACCESS_REQUEST_ENDPOINT,
     url,
     payload,
+    responseBody,
+    status: response.status,
   };
 }
-
-export { ACCESS_REQUEST_ENDPOINT };
