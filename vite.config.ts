@@ -6,8 +6,7 @@ import { componentTagger } from "lovable-tagger";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
-  // Dev fetch uses same-origin /admin → Vite must proxy to the real Flask API.
-  // tamtamapi.xyz does not expose POST /admin/access_requests (404); default local Flask.
+  // Dev: same-origin /admin and /api proxy to the Flask API (local or remote).
   const apiProxyTarget = trimTrailingSlash(
     env.VITE_DEV_PROXY_TARGET?.trim()
       || env.VITE_API_URL?.trim()
