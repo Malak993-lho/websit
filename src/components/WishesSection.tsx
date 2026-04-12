@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Heart, X, Sparkles, Gift } from "lucide-react";
-import { getApiBaseUrl } from "@/lib/apiConfig";
+import { getWishesApiBaseUrl } from "@/lib/apiConfig";
 
 const CARD_STYLES = [
   { emoji: "🌟", color: "from-pink-100 to-rose-50 border-pink-200" },
@@ -52,25 +52,28 @@ function normalizeWishesFromCommunity(data: CommunityPublicResponse): ApiWish[] 
   }));
 }
 
-/** Try public community endpoint (Admin backend), then legacy flat array endpoint. */
+/**
+ * Prefer `/api/wishes/approved` first: default host (tamtamapi.xyz) serves it but returns 404
+ * for `/api/community/public`, which would spam the console with a failed request every load.
+ */
 async function fetchApprovedWishes(): Promise<ApiWish[]> {
-  const base = getApiBaseUrl();
+  const base = getWishesApiBaseUrl();
   const communityUrl = `${base}/api/community/public`;
   const legacyUrl = `${base}/api/wishes/approved`;
+
+  const tryLegacy = await fetch(legacyUrl);
+  if (tryLegacy.ok) {
+    const data: unknown = await tryLegacy.json();
+    if (Array.isArray(data) && data.length > 0) {
+      return data as ApiWish[];
+    }
+  }
 
   const tryCommunity = await fetch(communityUrl);
   if (tryCommunity.ok) {
     const data: CommunityPublicResponse = await tryCommunity.json();
     const normalized = normalizeWishesFromCommunity(data);
     if (normalized.length > 0) return normalized;
-  }
-
-  const tryLegacy = await fetch(legacyUrl);
-  if (tryLegacy.ok) {
-    const data: unknown = await tryLegacy.json();
-    if (Array.isArray(data)) {
-      return data as ApiWish[];
-    }
   }
 
   throw new Error("No wishes endpoint returned data");

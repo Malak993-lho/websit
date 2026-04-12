@@ -17,6 +17,16 @@ export function getApiBaseUrl(): string {
   return "https://tamtamapi.xyz";
 }
 
+/**
+ * Always resolves to the real API origin (never empty). Use for public GETs that are not
+ * proxied on the dev server (e.g. Wishes). Request Access keeps using getApiBaseUrl() + proxy.
+ */
+export function getWishesApiBaseUrl(): string {
+  const raw = import.meta.env.VITE_API_URL?.trim();
+  if (raw) return trimTrailingSlashes(raw);
+  return "https://tamtamapi.xyz";
+}
+
 /** Socket.IO server URL (no path; client uses /socket.io/ automatically). */
 export function getSocketUrl(): string {
   if (import.meta.env.DEV) return "";
