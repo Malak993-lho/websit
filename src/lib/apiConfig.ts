@@ -1,39 +1,19 @@
 /**
- * REST API base URL + **live chat** Socket.IO origin.
+ * Single default backend: `https://admin.tamtamapi.xyz` for REST and live chat (same origin
+ * avoids CORS when the site is served from e.g. `app.tamtamapi.xyz`).
  *
- * REST: `VITE_API_URL` (see `.env` / `.env.example`); default public API tamtamapi.xyz.
- * Live chat: always `https://admin.tamtamapi.xyz` unless `VITE_LIVE_CHAT_SOCKET_URL`
- * or `VITE_SOCKETIO_URL` is set (explicit override only — not derived from the REST host).
+ * Override REST: `VITE_API_URL`. Override Socket.IO only: `VITE_LIVE_CHAT_SOCKET_URL` or
+ * `VITE_SOCKETIO_URL`.
  */
 function trimTrailingSlashes(s: string): string {
   return s.replace(/\/+$/, "");
 }
 
-const DEFAULT_API_BASE = "https://tamtamapi.xyz";
-
-/** Live chat (Socket.IO) origin; client connects to `${origin}/socket.io/`. */
-const DEFAULT_LIVE_CHAT_SOCKET_ORIGIN = "https://admin.tamtamapi.xyz";
-
-/** Map legacy admin subdomain to the public API host (avoids browser CORS on the marketing site). */
-function normalizePublicApiOrigin(base: string): string {
-  try {
-    const u = new URL(base);
-    if (u.hostname.toLowerCase() !== "admin.tamtamapi.xyz") {
-      return trimTrailingSlashes(base);
-    }
-    u.hostname = "tamtamapi.xyz";
-    if (u.protocol === "http:") u.protocol = "https:";
-    const path = u.pathname && u.pathname !== "/" ? u.pathname.replace(/\/+$/, "") : "";
-    return trimTrailingSlashes(`${u.origin}${path}`);
-  } catch {
-    return trimTrailingSlashes(base);
-  }
-}
+const DEFAULT_BACKEND_ORIGIN = "https://admin.tamtamapi.xyz";
 
 function resolveApiBaseUrl(): string {
   const raw = import.meta.env.VITE_API_URL?.trim();
-  const resolved = raw ? trimTrailingSlashes(raw) : trimTrailingSlashes(DEFAULT_API_BASE);
-  return normalizePublicApiOrigin(resolved);
+  return raw ? trimTrailingSlashes(raw) : DEFAULT_BACKEND_ORIGIN;
 }
 
 export function getApiBaseUrl(): string {
@@ -50,5 +30,5 @@ export function getSocketUrl(): string {
     import.meta.env.VITE_LIVE_CHAT_SOCKET_URL?.trim() ||
     import.meta.env.VITE_SOCKETIO_URL?.trim();
   if (raw) return trimTrailingSlashes(raw);
-  return DEFAULT_LIVE_CHAT_SOCKET_ORIGIN;
+  return DEFAULT_BACKEND_ORIGIN;
 }
