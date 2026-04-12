@@ -132,6 +132,11 @@ const ChatButton = () => {
   useEffect(() => {
     const url = getSocketUrl();
     const convId = conversationIdRef.current;
+    const socketIoUrl = `${url.replace(/\/+$/, "")}/socket.io/`;
+    console.info("[TamTam live chat] resolved live chat base URL", {
+      liveChatSocketOrigin: url,
+      socketIoUrl,
+    });
 
     const socket = io(url, {
       // Polling first: stable through Vite’s HTTP proxy; then upgrade to WebSocket when supported.
@@ -171,7 +176,12 @@ const ChatButton = () => {
     const onConnect = () => {
       clearManualReconnect();
       const transport = socket.io.engine?.transport?.name;
-      console.info("[TamTam live chat] connected", { id: socket.id, transport });
+      console.info("[TamTam live chat] socket connect", {
+        id: socket.id,
+        transport,
+        liveChatSocketOrigin: url,
+        socketIoUrl,
+      });
       joinRoom();
     };
 
@@ -189,7 +199,11 @@ const ChatButton = () => {
     };
 
     const onConnectError = (err: Error) => {
-      console.warn("[TamTam live chat] connect_error", err?.message ?? err);
+      console.warn("[TamTam live chat] connect_error", {
+        message: err?.message ?? String(err),
+        liveChatSocketOrigin: url,
+        socketIoUrl,
+      });
     };
 
     const onChatHistory = (data: ChatHistoryPayload) => {
@@ -203,6 +217,12 @@ const ChatButton = () => {
       seenServerMessageIdsRef.current = new Set(rows.map((m) => String(m.id)));
       const rest = rows.map(mapServerMessage);
       setMessages([createWelcomeMessage(), ...rest]);
+    };
+
+    const onConversationsList = (data: unknown) => {
+      console.info("[TamTam live chat] conversations_list (visitor; usually unused)", {
+        wireType: typeof data,
+      });
     };
 
     const onNewMessage = (data: NewMessagePayload) => {
@@ -260,6 +280,7 @@ const ChatButton = () => {
     socket.on("connect_error", onConnectError);
     socket.io.on("reconnect_failed", onReconnectFailed);
     socket.on("chat_history", onChatHistory);
+    socket.on("conversations_list", onConversationsList);
     socket.on("new_message", onNewMessage);
 
     if (socket.connected) {
@@ -274,6 +295,7 @@ const ChatButton = () => {
       socket.off("disconnect", onDisconnect);
       socket.off("connect_error", onConnectError);
       socket.off("chat_history", onChatHistory);
+      socket.off("conversations_list", onConversationsList);
       socket.off("new_message", onNewMessage);
       socket.disconnect();
       socketRef.current = null;
